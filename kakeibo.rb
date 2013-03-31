@@ -47,7 +47,7 @@ module Kakeibo
     end
 
     def set_total(date, total)
-      @totals[Date.parse date] = total
+      @totals[date] = total
     end
 
     def add_transaction(date, transaction)
@@ -88,7 +88,9 @@ module Kakeibo
     Account = Kakeibo::Account
     Transaction = Kakeibo::Transaction
 
-    def initialize(config)
+    def initialize(config, reader)
+      @reader = reader
+
       today = DateTime.now
       today = today.prev_day if today.hour < 6
       @today = Date.new today.year, today.month, today.day
@@ -102,15 +104,16 @@ module Kakeibo
     end
 
     def save
-      @accounts.each_value {|account| account.save }
+      @accounts.each {|account| account.save }
     end
 
     def get_date(date)
+      date = date || ""
       begin
         Date.parse date
       rescue ArgumentError
         begin
-          Date.parse @today.year + '-' + date
+          Date.parse @today.year.to_s + '-' + date
         rescue ArgumentError
           @today
         end
@@ -143,6 +146,32 @@ module Kakeibo
       end
     end
 
+    def run
+      @reader.read {|data| put data}
+    end
+
   end
+
+  class Reader
+
+    def read
+      yield
+    end
+
+  end
+
+end
+
+if __FILE__ == $0
+
+  abort "usage: #{$0} config-file" if ARGV.size != 1
+
+  require_relative ARGV[0]
+
+  m = Kakeibo::Manager.new $config, Kakeibo::Reader.new
+
+  m.run
+
+  m.save
 
 end
