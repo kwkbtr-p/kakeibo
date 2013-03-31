@@ -183,6 +183,7 @@ module Kakeibo
 
           amount = Readline.readline 'amount: '
           break unless amount && !amount.empty?
+          data[:date] = Readline.readline 'date: ', true
           data[:account] = Readline.readline 'account: ', true
           if amount =~ r
             data[:total] = amount.sub(r, '').to_i
