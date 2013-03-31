@@ -72,4 +72,23 @@ module Kakeibo
 
   end
 
+  class Manager
+    Account = Kakeibo::Account
+    Transaction = Kakeibo::Transaction
+
+    def initialize(config)
+      @accounts = {}
+      config[:accounts].each do |filename|
+        filename.sub! /(.yaml)?$/, '.yaml'
+        account = Account.new filename
+        @accounts[account.name] = account
+      end
+    end
+
+    def save
+      @accounts.each_value {|account| account.save }
+    end
+
+  end
+
 end
