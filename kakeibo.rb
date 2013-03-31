@@ -124,10 +124,10 @@ module Kakeibo
     def get_date(date)
       date = date || ""
       begin
-        Date.parse date
+        Date.parse @today.year.to_s + '-' + date
       rescue ArgumentError
         begin
-          Date.parse @today.year.to_s + '-' + date
+          Date.parse date
         rescue ArgumentError
           @today
         end
