@@ -194,7 +194,7 @@ if __FILE__ == $0
 
   abort "usage: #{$0} config-file" if ARGV.size != 1
 
-  require_relative ARGV[0]
+  require ARGV[0].sub(/^(\.\/)?/, './')
 
   m = Kakeibo::Manager.new $config, Kakeibo::Reader.new
 
