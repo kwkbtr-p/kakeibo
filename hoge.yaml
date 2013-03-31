@@ -1,0 +1,12 @@
+---
+:totals:
+  2013-03-30: 10000
+:transactions:
+  2013-03-30: -2000
+  2013-03-31:
+  - !ruby/object:Kakeibo::Transaction
+    amount: 120
+    title: coffee
+    shop: ''
+    category: food
+:name: hoge
