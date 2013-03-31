@@ -104,6 +104,17 @@ module Kakeibo
         account = Account.new filename
         @accounts << account
       end
+
+      @default = @accounts[0] if @accounts.size == 1
+
+      if config[:default]
+        @default =
+          begin
+            find_account config[:default]
+          rescue
+            nil
+          end
+      end
     end
 
     def save
@@ -126,7 +137,8 @@ module Kakeibo
 
     def find_account(name)
       if name.empty?
-        raise NotFoundException.new '(empty)'
+        raise NotFoundException.new '(empty)' unless @default
+        return @default
       end
 
       r = /^#{name}/
@@ -198,7 +210,7 @@ end
 
 if __FILE__ == $0
 
-  abort "usage: #{$0} config-file" if ARGV.size != 1
+  abort "usage: #{$0} config-file" unless ARGV.size == 1
 
   require ARGV[0].sub(/^(\.\/)?/, './')
 
