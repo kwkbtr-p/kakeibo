@@ -181,7 +181,9 @@ module Kakeibo
             data[:category] = Readline.readline 'category: '
           end
 
-          yield data
+          unless Readline.readline("Write #{data}? ") =~ /^n/
+            yield data
+          end
 
         rescue Interrupt
           puts
