@@ -1,5 +1,5 @@
 require 'date'
-require 'set'
+require 'readline'
 require 'yaml'
 
 module Kakeibo
@@ -43,7 +43,7 @@ module Kakeibo
       @data = Util::loadfile @filename
       @name = @data[:name] || @filename.sub(/.yaml$/, '')
       @totals = @data[:totals] || {}
-      @transactions = @data[:transactions] || {}
+      @transactions = @data[:transactions] || []
     end
 
     def set_total(date, total)
@@ -51,7 +51,6 @@ module Kakeibo
     end
 
     def add_transaction(date, transaction)
-      date = Date.parse date
       t = @transactions[date] || []
       t << transaction
       @transactions[date] = t
@@ -122,6 +121,10 @@ module Kakeibo
     private :get_date
 
     def find_account(name)
+      if name.empty?
+        raise NotFoundException.new '(empty)'
+      end
+
       r = /^#{name}/
       candidate = @accounts.find_all do |account|
         account.name =~ r
@@ -155,7 +158,32 @@ module Kakeibo
   class Reader
 
     def read
-      yield
+      r = /^=/
+
+      while true
+
+        begin
+          data = {}
+
+          amount = Readline.readline 'amount: '
+          break unless amount && !amount.empty?
+          data[:account] = Readline.readline 'account: ', true
+          if amount =~ r
+            data[:total] = amount.sub(r, '').to_i
+          else
+            data[:amount] = amount.to_i
+            data[:title] = Readline.readline 'title: ', true
+            data[:shop] = Readline.readline 'shop: ', true
+            data[:category] = Readline.readline 'category: '
+          end
+
+          yield data
+
+        rescue Interrupt
+          puts
+        end
+
+      end
     end
 
   end
