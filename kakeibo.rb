@@ -18,6 +18,18 @@ module Kakeibo
 
   end
 
+  class NotFoundException < Exception
+    def initialize(name)
+      super "Not found: #{name}"
+    end
+  end
+
+  class NotUniqueException < Exception
+    def initialize(name)
+      super "Not unique: #{name}"
+    end
+  end
+
   class Account
     attr_accessor :filename
     attr_accessor :name
@@ -77,16 +89,58 @@ module Kakeibo
     Transaction = Kakeibo::Transaction
 
     def initialize(config)
-      @accounts = {}
+      today = DateTime.now
+      today = today.prev_day if today.hour < 6
+      @today = Date.new today.year, today.month, today.day
+
+      @accounts = []
       config[:accounts].each do |filename|
         filename.sub! /(.yaml)?$/, '.yaml'
         account = Account.new filename
-        @accounts[account.name] = account
+        @accounts << account
       end
     end
 
     def save
       @accounts.each_value {|account| account.save }
+    end
+
+    def get_date(date)
+      begin
+        Date.parse date
+      rescue ArgumentError
+        begin
+          Date.parse @today.year + '-' + date
+        rescue ArgumentError
+          @today
+        end
+      end
+    end
+    private :get_date
+
+    def find_account(name)
+      r = /^#{name}/
+      candidate = @accounts.find_all do |account|
+        account.name =~ r
+      end
+      raise NotFoundException.new name if candidate.empty?
+      raise NotUniqueException.new name if candidate.size > 1
+      candidate[0]
+    end
+    private :find_account
+
+    def put(data)
+      date = get_date data[:date]
+      account = find_account data[:account]
+      if data[:total]
+        account.set_total date, data[:total]
+      else
+        transaction = Transaction.new(data[:amount],
+                                      data[:title],
+                                      data[:shop],
+                                      data[:category])
+        account.add_transaction date, transaction
+      end
     end
 
   end
