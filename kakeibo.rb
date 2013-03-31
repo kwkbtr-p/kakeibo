@@ -40,7 +40,11 @@ module Kakeibo
     end
 
     def load
-      @data = Util::loadfile @filename
+      begin
+        @data = Util::loadfile @filename
+      rescue Errno::ENOENT
+        @data = {}
+      end
       @name = @data[:name] || @filename.sub(/.yaml$/, '')
       @totals = @data[:totals] || {}
       @transactions = @data[:transactions] || []
