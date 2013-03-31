@@ -47,7 +47,7 @@ module Kakeibo
       end
       @name = @data[:name] || @filename.sub(/.yaml$/, '')
       @totals = @data[:totals] || {}
-      @transactions = @data[:transactions] || []
+      @transactions = @data[:transactions] || {}
     end
 
     def set_total(date, total)
